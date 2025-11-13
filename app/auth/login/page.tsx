@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
+import { Suspense } from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,7 +18,7 @@ import { config } from "@/lib/config"
 import Image from "next/image"
 import { CurrentLogo } from "@/components/CurrentLogo"
 
-export default function LoginPage() {
+function LoginForm() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -30,7 +31,6 @@ export default function LoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [isClient, setIsClient] = useState(false)
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { login, requestPasswordReset } = useAuth()
   const { showSuccess, showError } = useToastContext()
 
@@ -84,12 +84,7 @@ export default function LoginPage() {
       if (success) {
         showSuccess("Success!", "Login successful. Redirecting to dashboard...")
         // Check if there's a redirect parameter
-        const redirect = searchParams.get('redirect')
-        if (redirect) {
-          router.push(redirect)
-        } else {
-          router.push("/dashboard")
-        }
+        router.push("/dashboard")
       } else {
         showError("Login Failed", "Invalid email or password")
       }
@@ -322,5 +317,19 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md flex justify-center">
+          <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
