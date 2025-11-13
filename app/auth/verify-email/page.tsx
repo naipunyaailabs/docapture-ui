@@ -14,8 +14,11 @@ function VerificationContent() {
   const secret = searchParams.get("secret")
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [error, setError] = useState<string | null>(null)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    // Set isClient to true only on the client side
+    setIsClient(true)
     if (!userId || !secret) {
       setStatus("error")
       setError("Missing verification details. Please use the link from your email.")
@@ -34,6 +37,17 @@ function VerificationContent() {
 
     verify()
   }, [userId, secret])
+
+  // Don't render anything during server-side rendering
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md flex justify-center">
+          <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">

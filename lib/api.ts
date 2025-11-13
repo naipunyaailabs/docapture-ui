@@ -519,6 +519,24 @@ class ApiService {
     // Mock implementation for now
     return { success: true }
   }
+
+  // Add the missing confirmVerification method
+  async confirmVerification(userId: string, secret: string): Promise<ApiResponse<void>> {
+    try {
+      return await this.request<void>(
+        `${this.baseUrl}/auth/verify-email`,
+        {
+          method: "POST",
+          body: JSON.stringify({ userId, secret }),
+        }
+      )
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "An unexpected error occurred" 
+      }
+    }
+  }
 }
 
 export const apiService = new ApiService()

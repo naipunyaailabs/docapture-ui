@@ -34,10 +34,16 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const { register, error: authError } = useAuth()
   const { theme, setTheme } = useTheme()
   const { showSuccess, showError } = useToastContext()
+
+  useEffect(() => {
+    // Set isClient to true only on the client side
+    setIsClient(true)
+  }, [])
 
   const validateForm = () => {
     console.log('Validating form...');
@@ -208,6 +214,17 @@ export default function RegisterPage() {
     // Default error message
     return 'An unexpected error occurred. Please try again.';
   };
+
+  // Don't render anything during server-side rendering
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md flex justify-center">
+          <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -22,6 +22,7 @@ function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { resetPassword } = useAuth()
@@ -30,6 +31,8 @@ function ResetPasswordForm() {
   const secret = searchParams.get("secret")
 
   useEffect(() => {
+    // Set isClient to true only on the client side
+    setIsClient(true)
     if (!userId || !secret) {
       setError("Invalid or expired reset link. Please request a new password reset.")
     }
@@ -90,6 +93,17 @@ function ResetPasswordForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Don't render anything during server-side rendering
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md flex justify-center">
+          <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    )
   }
 
   if (success) {

@@ -28,16 +28,19 @@ export default function LoginPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [resetEmailSent, setResetEmailSent] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login, requestPasswordReset } = useAuth()
   const { showSuccess, showError } = useToastContext()
 
   useEffect(() => {
+    // Set isClient to true only on the client side
+    setIsClient(true)
     // In a real implementation, you would check if the user is already authenticated
     // For now, we'll just set it to false
     setIsAuthenticated(false)
-  }, [router])
+  }, [])
 
   // Form validation
   const validateForm = () => {
@@ -141,6 +144,17 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Don't render anything during server-side rendering
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md flex justify-center">
+          <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    )
   }
 
   if (isAuthenticated) {

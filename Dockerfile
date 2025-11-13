@@ -22,9 +22,6 @@ ARG NEXT_PUBLIC_BACKEND_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Skip static export which is causing issues with auth pages
-ENV NEXT_EXPORT=false
-
 # Build the Next.js application
 RUN bun run build
 
