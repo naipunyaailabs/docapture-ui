@@ -25,6 +25,9 @@ ENV NODE_ENV=production
 # Build the Next.js application
 RUN bun run build
 
+# Install serve globally for static export serving
+RUN bun add -g serve
+
 # Expose the port the app runs on
 EXPOSE 3000
 
@@ -33,4 +36,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:3000/ || exit 1
 
 # Command to run the application in production mode
-CMD ["bun", "next", "start"]
+CMD ["serve", "out"]
