@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  docapture-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: docapture-ui
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_APP_NAME: docapture Pro
+      NEXT_PUBLIC_BASE_URL: https://docapture.com
+      NEXT_PUBLIC_API_BASE_URL: http://host.docker.internal:5000
+      NEXT_PUBLIC_AUTH_API_BASE_URL: http://host.docker.internal:5000
+      NEXT_PUBLIC_BACKEND_URL: http://host.docker.internal:5000
+      NEXT_PUBLIC_SUPPORT_EMAIL: support@docapture.com
+      NEXT_PUBLIC_MAX_UPLOAD_SIZE: 100
+      NEXT_PUBLIC_DEFAULT_THEME: system
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
