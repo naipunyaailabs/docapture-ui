@@ -1,39 +1,37 @@
-# 1. Dependency installation + build stage
+# 1. Builder stage
 FROM oven/bun:1 AS builder
 
-# Create app directory
 WORKDIR /app
 
-# Copy only package files first (for caching)
-COPY package.json bun.lockb ./
+# Copy package metadata
+# bun.lockb is optional, wildcard prevents checksum failure
+COPY package.json bun.lockb* ./
 
-# Install dependencies using Bun (fast & cached)
-RUN bun install --frozen-lockfile
+# Install deps (tries frozen first, falls back if lock missing)
+RUN bun install --frozen-lockfile || bun install
 
-# Copy entire project
+# Copy source code
 COPY . .
 
-# Build the Next.js project (uses SWC / Turbopack depending on config)
+# Build Next.js
 RUN bun run build
 
 
 
-# 2. Production runtime stage
+# 2. Runner stage (production)
 FROM oven/bun:1 AS runner
 
 WORKDIR /app
 
-# Only copy built artifacts + prod deps
+# Copy built output
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/bun.lockb ./bun.lockb
+COPY --from=builder /app/bun.lockb* ./bun.lockb
 
-# Install only production deps
-RUN bun install --production --frozen-lockfile
+# Install only prod dependencies
+RUN bun install --production --frozen-lockfile || bun install --production
 
-# Expose port (Next.js default)
 EXPOSE 3000
 
-# Start Next.js (uses Bun runtime)
 CMD ["bun", "run", "start"]
