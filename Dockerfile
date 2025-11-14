@@ -1,14 +1,14 @@
-# Use the official Node.js image
-FROM node:18-alpine
+# Use the official Node.js image with Bun runtime
+FROM oven/bun:latest
 
 # Set the working directory
 WORKDIR /app
 
 # Copy package.json and lock files
-COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+COPY package.json bun.lock* package-lock.json* pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies using Bun
+RUN bun install
 
 # Copy the rest of the application code
 COPY . .
@@ -23,7 +23,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Build the Next.js application
-RUN npm run build
+RUN bun run build
 
 # Expose the port the app runs on
 EXPOSE 3000
@@ -33,4 +33,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:3000/ || exit 1
 
 # Command to run the application in production mode
-CMD ["npm", "start"]
+CMD ["bun", "start"]
