@@ -1,36 +1,39 @@
-# Use the official Node.js image with Bun runtime
-FROM oven/bun:latest
+# 1. Dependency installation + build stage
+FROM oven/bun:1 AS builder
 
-# Set the working directory
+# Create app directory
 WORKDIR /app
 
-# Copy package.json and lock files
-COPY package.json bun.lock* package-lock.json* pnpm-lock.yaml* ./
+# Copy only package files first (for caching)
+COPY package.json bun.lockb ./
 
-# Install dependencies using Bun
-RUN bun install
+# Install dependencies using Bun (fast & cached)
+RUN bun install --frozen-lockfile
 
-# Copy the rest of the application code
+# Copy entire project
 COPY . .
 
-# Build arguments for environment variables
-ARG NEXT_PUBLIC_API_BASE_URL
-ARG NEXT_PUBLIC_AUTH_API_BASE_URL
-ARG NEXT_PUBLIC_BACKEND_URL
-
-# Set environment variables for build
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
-# Build the Next.js application
+# Build the Next.js project (uses SWC / Turbopack depending on config)
 RUN bun run build
 
-# Expose the port the app runs on
+
+
+# 2. Production runtime stage
+FROM oven/bun:1 AS runner
+
+WORKDIR /app
+
+# Only copy built artifacts + prod deps
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/bun.lockb ./bun.lockb
+
+# Install only production deps
+RUN bun install --production --frozen-lockfile
+
+# Expose port (Next.js default)
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:3000/ || exit 1
-
-# Command to run the application in production mode
-CMD ["bun", "start"]
+# Start Next.js (uses Bun runtime)
+CMD ["bun", "run", "start"]
