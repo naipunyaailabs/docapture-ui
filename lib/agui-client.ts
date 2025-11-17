@@ -132,6 +132,9 @@ export class AGUIClient {
         if (input.format) {
           requestBody.append('format', input.format);
         }
+        if (input.length) {
+          requestBody.append('length', input.length);
+        }
         if (input.requiredFields) {
           requestBody.append('requiredFields', JSON.stringify(input.requiredFields));
         }
@@ -443,13 +446,15 @@ export class AGUIClient {
     options: {
       prompt?: string;
       format?: 'pdf' | 'docx';
+      length?: 'short' | 'medium' | 'detailed';
       onEvent?: (event: AGUIEvent) => void;
     } = {}
   ): Promise<AGUIResponse> {
     return this.executeAgent('document-summarizer', {
       document,
       prompt: options.prompt,
-      format: options.format || 'pdf'
+      format: options.format || 'pdf',
+      length: options.length || 'medium'
     }, options.onEvent);
   }
 

@@ -12,6 +12,7 @@ import { DynamicResultViewer } from "@/components/dynamic-result-viewer";
 export function DocumentCopilot() {
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState<'extract' | 'summarize' | 'rfp'>('extract');
+  const [summaryLength, setSummaryLength] = useState<'short' | 'medium' | 'detailed'>('medium');
 
   // AG-UI hooks for different document processing services
   const fieldExtractor = useDocumentFieldExtractor({
@@ -72,7 +73,8 @@ export function DocumentCopilot() {
     
     const result = await documentSummarizer.summarizeDocument(documentFile, {
       prompt: "Provide a comprehensive summary focusing on key points and important details",
-      format: "excel"
+      format: "excel",
+      length: summaryLength
     });
     
     console.log('Document summarization result:', result);
@@ -230,23 +232,40 @@ export function DocumentCopilot() {
             )}
 
             {activeTab === 'summarize' && (
-              <Button
-                onClick={handleSummarizeDocument}
-                disabled={!documentFile || currentState.isLoading}
-                className="flex items-center gap-2"
-              >
-                {currentState.isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Summarizing...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="h-4 w-4" />
-                    Summarize Document
-                  </>
-                )}
-              </Button>
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-gray-700">Summary Length:</label>
+                    <select
+                      value={summaryLength}
+                      onChange={(e) => setSummaryLength(e.target.value as 'short' | 'medium' | 'detailed')}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                      disabled={currentState.isLoading}
+                    >
+                      <option value="short">Short</option>
+                      <option value="medium">Medium</option>
+                      <option value="detailed">Detailed</option>
+                    </select>
+                  </div>
+                  <Button
+                    onClick={handleSummarizeDocument}
+                    disabled={!documentFile || currentState.isLoading}
+                    className="flex items-center gap-2 mt-auto"
+                  >
+                    {currentState.isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Summarizing...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4" />
+                        Summarize Document
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
             )}
 
             {activeTab === 'rfp' && (

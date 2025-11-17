@@ -192,6 +192,7 @@ export function useDocumentSummarizer(options: AGUIOptions = {}) {
     summarizeOptions: {
       prompt?: string;
       format?: 'excel';
+      length?: 'short' | 'medium' | 'detailed';
     } = {}
   ) => {
     return agui.executeAgent('document-summarizer', {
