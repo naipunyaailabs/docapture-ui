@@ -49,12 +49,97 @@ export function DynamicServicePage({ service }: DynamicServicePageProps) {
     }
   };
 
+  // Handle multiple file input changes (for quotation comparison)
+  const handleMultipleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const filesArray = Array.from(e.target.files);
+      handleInputChange('documents', filesArray);
+    }
+  };
+
+  // Remove a file from the multiple files list
+  const removeFile = (index: number) => {
+    const currentFiles = inputData.documents || [];
+    const updatedFiles = currentFiles.filter((_: any, i: number) => i !== index);
+    handleInputChange('documents', updatedFiles);
+  };
+
   // Render dynamic input fields based on service requirements
   const renderInputFields = () => {
     const fields = [];
     
-    // Add document file input for services that process documents
-    if (service.supportedFileTypes.length > 0) {
+    // Special handling for quotation comparison service (multiple files required)
+    if (service.id === 'quotation-compare') {
+      fields.push(
+        <div key="quotation-files" className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="quotation-files">Quotation Documents *</Label>
+            <Info className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="text-sm text-muted-foreground mb-2">
+            Upload 2-10 quotations from different vendors for comparison
+          </div>
+          <Input
+            id="quotation-files"
+            type="file"
+            onChange={handleMultipleFilesChange}
+            accept={service.supportedFileTypes.join(",")}
+            disabled={agui.isLoading}
+            multiple
+            required
+          />
+          {inputData.documents && inputData.documents.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="text-sm font-medium">
+                Selected: {inputData.documents.length} quotation{inputData.documents.length > 1 ? 's' : ''}
+                {inputData.documents.length < 2 && <span className="text-destructive ml-2">(minimum 2 required)</span>}
+                {inputData.documents.length > 10 && <span className="text-destructive ml-2">(maximum 10 allowed)</span>}
+              </div>
+              <div className="border rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
+                {inputData.documents.map((file: File, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                    <div className="flex items-center gap-2 flex-1">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm truncate">{file.name}</span>
+                      <span className="text-xs text-muted-foreground">({(file.size / 1024).toFixed(2)} KB)</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(index)}
+                      disabled={agui.isLoading}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+      
+      // Add criteria/requirements input for quotation comparison
+      fields.push(
+        <div key="criteria" className="space-y-2">
+          <Label htmlFor="criteria">Your Requirements (optional)</Label>
+          <Textarea
+            id="criteria"
+            placeholder="E.g., Need fastest delivery, warranty required, must support maintenance contract"
+            value={inputData.criteria || ""}
+            onChange={(e) => handleInputChange("criteria", e.target.value)}
+            disabled={agui.isLoading}
+            rows={3}
+          />
+          <p className="text-xs text-muted-foreground">
+            Specify any special requirements or priorities for vendor selection
+          </p>
+        </div>
+      );
+    }
+    // Standard single document upload for other services
+    else if (service.supportedFileTypes.length > 0) {
       fields.push(
         <div key="document-file" className="space-y-2">
           <Label htmlFor="document">Document File</Label>
@@ -205,6 +290,18 @@ export function DynamicServicePage({ service }: DynamicServicePageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate quotation comparison service
+    if (service.id === "quotation-compare") {
+      if (!inputData.documents || inputData.documents.length < 2) {
+        alert("Please upload at least 2 quotations to compare");
+        return;
+      }
+      if (inputData.documents.length > 10) {
+        alert("Maximum 10 quotations can be compared at once. Please remove some files.");
+        return;
+      }
+    }
+    
     // Validate required fields for RFP creator
     if (service.id === "rfp-creator") {
       if (!inputData.title || !inputData.organization || !inputData.deadline) {
@@ -252,21 +349,141 @@ export function DynamicServicePage({ service }: DynamicServicePageProps) {
           </div>
         </div>
 
-        {/* Tabs for Single vs Batch Processing */}
-        <Tabs defaultValue="single" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-            <TabsTrigger value="single" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Single Document
-            </TabsTrigger>
-            <TabsTrigger value="batch" className="flex items-center gap-2">
-              <Files className="h-4 w-4" />
-              Batch Processing
-            </TabsTrigger>
-          </TabsList>
+        {/* Batch-only services (like quotation-compare) show only the form, no tabs */}
+        {service.id === 'quotation-compare' ? (
+          <div className="flex flex-col gap-8">
+            {/* Input Form */}
+            <div className="bg-card rounded-lg border p-6">
+              <h2 className="text-2xl font-semibold mb-6">Compare Quotations</h2>
+              
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {renderInputFields()}
+                
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={agui.isLoading || !inputData.documents || inputData.documents.length < 2 || inputData.documents.length > 10}
+                    className="flex-1"
+                  >
+                    {agui.isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Comparing...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Compare Quotations
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      agui.reset();
+                      setInputData({});
+                    }}
+                    disabled={agui.isLoading}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </form>
+              
+              {/* Progress Indicator */}
+              {agui.isLoading && (
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{agui.message}</span>
+                    <span className="text-gray-500">{agui.progress}%</span>
+                  </div>
+                  <Progress value={agui.progress} className="h-2" />
+                </div>
+              )}
+              
+              {/* Error Display */}
+              {agui.error && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{agui.error}</AlertDescription>
+                </Alert>
+              )}
+              
+              {/* Service Information */}
+              <div className="mt-6 p-4 bg-muted rounded-lg">
+                <h3 className="font-medium mb-2">Service Information</h3>
+                <div className="text-sm space-y-1">
+                  <p><span className="font-medium">Category:</span> {service.category}</p>
+                  {service.supportedFileTypes.length > 0 && (
+                    <p><span className="font-medium">Supported File Types:</span> {service.supportedFileTypes.join(", ")}</p>
+                  )}
+                  {service.supportedFormats.length > 0 && (
+                    <p><span className="font-medium">Output Formats:</span> {service.supportedFormats.join(", ")}</p>
+                  )}
+                </div>
+              </div>
+            </div>
 
-          {/* Single Document Processing */}
-          <TabsContent value="single" className="space-y-8">
+            {/* Processing Events */}
+            {agui.events.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Info className="h-4 w-4" />
+                    Processing Events
+                  </CardTitle>
+                  <CardDescription>
+                    Real-time processing updates
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-40 overflow-auto">
+                    {[...agui.events].reverse().slice(0, 10).map((event, index) => (
+                      <div key={index} className="text-xs p-2 bg-muted rounded">
+                        <div className="flex justify-between">
+                          <span className="font-medium">{event.type}</span>
+                          <span className="text-muted-foreground">
+                            {new Date(event.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        {event.data?.message && (
+                          <p className="text-muted-foreground mt-1">{event.data.message}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Output Panel */}
+            <div className="space-y-6">
+              <DynamicResultViewer
+                serviceId={service.id}
+                result={agui.result}
+                isLoading={agui.isLoading}
+                error={agui.error}
+              />
+            </div>
+          </div>
+        ) : (
+          /* Tabs for Single vs Batch Processing (for other services) */
+          <Tabs defaultValue="single" className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+              <TabsTrigger value="single" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Single Document
+              </TabsTrigger>
+              <TabsTrigger value="batch" className="flex items-center gap-2">
+                <Files className="h-4 w-4" />
+                Batch Processing
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Single Document Processing */}
+            <TabsContent value="single" className="space-y-8">
             <div className="flex flex-col gap-8">
               {/* Input Form */}
               <div className="bg-card rounded-lg border p-6">
@@ -391,6 +608,7 @@ export function DynamicServicePage({ service }: DynamicServicePageProps) {
             <BatchProcessor service={service} />
           </TabsContent>
         </Tabs>
+        )}
       </main>
     </div>
   );

@@ -227,3 +227,24 @@ export function useRFPCreator(options: AGUIOptions = {}) {
     createRFP
   };
 }
+
+export function useQuotationCompare(options: AGUIOptions = {}) {
+  const agui = useAGUI(options);
+
+  const compareQuotations = useCallback(async (
+    documents: File[],
+    compareOptions: {
+      criteria?: string;
+    } = {}
+  ) => {
+    return agui.executeAgent('quotation-compare', {
+      documents,
+      ...compareOptions
+    });
+  }, [agui]);
+
+  return {
+    ...agui,
+    compareQuotations
+  };
+}

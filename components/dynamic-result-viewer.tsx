@@ -33,6 +33,207 @@ export function DynamicResultViewer({
   isLoading,
   error
 }: DynamicResultViewerProps) {
+  // Render markdown content (for quotation comparison)
+  const renderMarkdownResult = (data: any) => {
+    if (!data) return null;
+    
+    // Extract markdown content
+    const markdownContent = data.comparison || data.markdown || data;
+    
+    if (typeof markdownContent !== 'string') {
+      return renderJsonResult(data);
+    }
+    
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-medium flex items-center gap-2">
+            <FileBarChart className="h-5 w-5" />
+            Quotation Comparison Analysis
+          </h3>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => {
+                const blob = new Blob([markdownContent], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'quotation-comparison.md';
+                link.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download Markdown
+            </Button>
+          </div>
+        </div>
+        
+        {/* Vendor count and names */}
+        {data.vendorCount && (
+          <div className="bg-muted p-3 rounded-lg">
+            <p className="text-sm font-medium">
+              Comparing {data.vendorCount} quotation{data.vendorCount > 1 ? 's' : ''}
+              {data.vendors && data.vendors.length > 0 && (
+                <span className="text-muted-foreground ml-2">
+                  ({data.vendors.join(', ')})
+                </span>
+              )}
+            </p>
+          </div>
+        )}
+        
+        {/* Render markdown as formatted content */}
+        <div className="prose prose-sm max-w-none border rounded-lg p-6 bg-background">
+          <div className="markdown-content" style={{ whiteSpace: 'pre-wrap' }}>
+            {formatMarkdownToHtml(markdownContent)}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Simple markdown to HTML converter (handles basic markdown syntax)
+  const formatMarkdownToHtml = (markdown: string) => {
+    if (!markdown) return null;
+    
+    // Split into lines
+    const lines = markdown.split('\n');
+    const elements: React.ReactElement[] = [];
+    let currentList: string[] = [];
+    let inTable = false;
+    let tableHeaders: string[] = [];
+    let tableRows: string[][] = [];
+    
+    const flushList = () => {
+      if (currentList.length > 0) {
+        elements.push(
+          <ul key={`list-${elements.length}`} className="list-disc pl-6 my-3 space-y-1">
+            {currentList.map((item, i) => (
+              <li key={i} dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(item) }} />
+            ))}
+          </ul>
+        );
+        currentList = [];
+      }
+    };
+    
+    const flushTable = () => {
+      if (inTable && tableHeaders.length > 0) {
+        elements.push(
+          <div key={`table-${elements.length}`} className="my-4 overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  {tableHeaders.map((header, i) => (
+                    <th key={i} className="border border-gray-300 px-4 py-2 text-left font-semibold">
+                      {header.trim()}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tableRows.map((row, i) => (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    {row.map((cell, j) => (
+                      <td key={j} className="border border-gray-300 px-4 py-2" dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(cell) }} />
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+        inTable = false;
+        tableHeaders = [];
+        tableRows = [];
+      }
+    };
+    
+    lines.forEach((line, index) => {
+      // Headers
+      if (line.startsWith('## ')) {
+        flushList();
+        flushTable();
+        elements.push(<h2 key={index} className="text-2xl font-bold mt-6 mb-3">{line.substring(3)}</h2>);
+      } else if (line.startsWith('### ')) {
+        flushList();
+        flushTable();
+        elements.push(<h3 key={index} className="text-xl font-semibold mt-4 mb-2">{line.substring(4)}</h3>);
+      } else if (line.startsWith('#### ')) {
+        flushList();
+        flushTable();
+        elements.push(<h4 key={index} className="text-lg font-medium mt-3 mb-2">{line.substring(5)}</h4>);
+      }
+      // Blockquote
+      else if (line.startsWith('> ')) {
+        flushList();
+        flushTable();
+        elements.push(
+          <blockquote key={index} className="border-l-4 border-blue-500 pl-4 my-3 italic text-gray-700">
+            {formatInlineMarkdown(line.substring(2))}
+          </blockquote>
+        );
+      }
+      // Table
+      else if (line.includes('|')) {
+        flushList();
+        const cells = line.split('|').map(cell => cell.trim()).filter(cell => cell);
+        if (cells.length > 0) {
+          if (!inTable) {
+            tableHeaders = cells;
+            inTable = true;
+          } else if (cells.every(cell => cell.match(/^[-:]+$/))) {
+            // Skip separator line
+          } else {
+            tableRows.push(cells);
+          }
+        }
+      }
+      // List items
+      else if (line.trim().match(/^[-*•✅❌⚠️🏆💰⭐⚡🥈]\s/)) {
+        flushTable();
+        currentList.push(line.trim().substring(1).trim());
+      }
+      // Horizontal rule
+      else if (line.trim() === '---') {
+        flushList();
+        flushTable();
+        elements.push(<hr key={index} className="my-4 border-gray-300" />);
+      }
+      // Empty line
+      else if (line.trim() === '') {
+        flushList();
+        flushTable();
+        // Add spacing
+      }
+      // Regular paragraph
+      else if (line.trim()) {
+        flushTable();
+        if (currentList.length === 0) {
+          elements.push(
+            <p key={index} className="my-2" dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(line) }} />
+          );
+        }
+      }
+    });
+    
+    flushList();
+    flushTable();
+    
+    return <>{elements}</>;
+  };
+  
+  // Format inline markdown (bold, italic, code)
+  const formatInlineMarkdown = (text: string): string => {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm">$1</code>');
+  };
+
   // Render JSON data in a formatted way
   const renderJsonResult = (data: any) => {
     if (!data) return null;
@@ -545,6 +746,11 @@ export function DynamicResultViewer({
     // For RFP creator service
     if (serviceId === "rfp-creator") {
       return renderRfpResult(result.result || result);
+    }
+    
+    // For quotation comparison service (markdown output)
+    if (serviceId === "quotation-compare") {
+      return renderMarkdownResult(result.result || result);
     }
     
     // For RFP summarizer service

@@ -79,6 +79,7 @@ export class AGUIClient {
       const endpointMap: Record<string, string> = {
         'field-extractor': '/extract',
         'document-summarizer': '/summarize',
+        'quotation-compare': '/compare-quotations',
         'rfp-creator': '/create-rfp',
         'rfp-summarizer': '/summarize-rfp',
         'template-uploader': '/upload',
@@ -120,14 +121,23 @@ export class AGUIClient {
         headers['Authorization'] = `Bearer ${this.apiKey}`;
       }
 
-      if (agentType === 'field-extractor' || agentType === 'document-summarizer' || agentType === 'rfp-summarizer' || agentType === 'template-uploader') {
+      if (agentType === 'field-extractor' || agentType === 'document-summarizer' || agentType === 'rfp-summarizer' || agentType === 'template-uploader' || agentType === 'quotation-compare') {
         // Form data for file uploads
         requestBody = new FormData();
         if (input.document) {
           requestBody.append('document', input.document);
         }
+        // For quotation comparison, support multiple documents
+        if (input.documents && Array.isArray(input.documents)) {
+          input.documents.forEach((doc: File) => {
+            (requestBody as FormData).append('documents', doc);
+          });
+        }
         if (input.prompt) {
           requestBody.append('prompt', input.prompt);
+        }
+        if (input.criteria) {
+          requestBody.append('criteria', input.criteria);
         }
         if (input.format) {
           requestBody.append('format', input.format);
@@ -468,6 +478,22 @@ export class AGUIClient {
     return this.executeAgent('rfp-summarizer', {
       document
     }, onEvent);
+  }
+
+  /**
+   * Compare multiple vendor quotations using AG-UI protocol
+   */
+  async compareQuotations(
+    documents: File[],
+    options: {
+      criteria?: string;
+      onEvent?: (event: AGUIEvent) => void;
+    } = {}
+  ): Promise<AGUIResponse> {
+    return this.executeAgent('quotation-compare', {
+      documents,
+      criteria: options.criteria
+    }, options.onEvent);
   }
 
   /**

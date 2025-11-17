@@ -1,15 +1,18 @@
 import { DynamicServiceClient } from "@/components/dynamic-service-client"
 
-export default function ServicePage({ params }: { params: { serviceId: string } }) {
-  return <DynamicServiceClient serviceId={params.serviceId} />
+export default async function ServicePage({ params }: { params: Promise<{ serviceId: string }> }) {
+  const { serviceId } = await params
+  return <DynamicServiceClient serviceId={serviceId} />
 }
 
 // For static export, we need to define which service IDs to pre-render
 // In a real application, you would fetch these from your API
 export async function generateStaticParams() {
-  // Return a specific service ID to pre-render
-  // This is just for testing purposes
-  return [{ serviceId: 'template-uploader' }]
+  // Return service IDs to pre-render
+  return [
+    { serviceId: 'template-uploader' },
+    { serviceId: 'quotation-compare' }
+  ]
 }
 
 export const dynamicParams = false
