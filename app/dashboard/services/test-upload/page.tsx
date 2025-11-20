@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Upload, Loader2 } from "lucide-react"
+import { config } from "@/lib/config"
 
 export default function TestUploadPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -54,8 +55,8 @@ export default function TestUploadPage() {
       
       console.log("Headers to be sent:", headers)
       
-      // Send test request
-      const response = await fetch("http://localhost:3001/agui/field-extractor", {
+      // Send test request using config API base URL
+      const response = await fetch(`${config.apiBaseUrl}/agui/field-extractor`, {
         method: "POST",
         headers: headers,
         body: formData,

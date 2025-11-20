@@ -34,6 +34,16 @@ export function DynamicServicePage({ service }: DynamicServicePageProps) {
     }
   });
 
+  // Render Generative UI for tool calls
+  return (
+    <>
+    
+      {renderServiceContent()}
+    </>
+  );
+
+  function renderServiceContent() {
+
   // Handle input changes
   const handleInputChange = (key: string, value: any) => {
     setInputData(prev => ({
@@ -612,4 +622,5 @@ export function DynamicServicePage({ service }: DynamicServicePageProps) {
       </main>
     </div>
   );
+  } // Close renderServiceContent function
 }

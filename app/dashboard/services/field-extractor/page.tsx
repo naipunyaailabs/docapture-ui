@@ -83,6 +83,6 @@ export default function FieldExtractorPage() {
     )
   }
 
-  // Render the dynamic service page
+  // Render the dynamic service page with working file upload
   return service ? <DynamicServicePage service={service} /> : null
 }
