@@ -319,11 +319,14 @@ class ApiService {
   // --- Service Endpoints ---
   async getServices(): Promise<ApiResponse<ServiceInfo[]>> {
     try {
+      // Use user authentication if available, otherwise fall back to API key
+      const useApiKey = !this.authToken;
+      
       return await this.request<ServiceInfo[]>(
         `${this.baseUrl}/services`,
         { method: "GET" },
         false, // isFormData
-        true   // useApiKey
+        useApiKey
       )
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" }
@@ -332,11 +335,14 @@ class ApiService {
 
   async getServiceById(id: string): Promise<ApiResponse<ServiceInfo>> {
     try {
+      // Use user authentication if available, otherwise fall back to API key
+      const useApiKey = !this.authToken;
+      
       return await this.request<ServiceInfo>(
         `${this.baseUrl}/services/${id}`,
         { method: "GET" },
         false, // isFormData
-        true   // useApiKey
+        useApiKey
       )
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" }
