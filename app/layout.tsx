@@ -2,13 +2,11 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import "@copilotkit/react-ui/styles.css"
 import { AuthProvider } from "@/contexts/auth-context"
 import { ThemeProvider } from "@/contexts/theme-context"
 import { ToastProvider } from "@/contexts/toast-context"
 import { config } from "@/lib/config"
 import { Toaster } from "@/components/ui/toaster"
-import { CopilotKit } from "@copilotkit/react-core"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,9 +27,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ToastProvider>
             <AuthProvider>
-              <CopilotKit runtimeUrl="/api/copilotkit">
-                {children}
-              </CopilotKit>
+              {children}
             </AuthProvider>
           </ToastProvider>
         </ThemeProvider>
