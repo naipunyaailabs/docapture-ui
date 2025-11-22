@@ -517,24 +517,38 @@ class ApiService {
   }
 
   async requestPasswordReset(email: string): Promise<ApiResponse<void>> {
-    // Mock implementation for now
-    return { success: true }
+    try {
+      return await this.request<void>(
+        `${this.baseUrl}/auth/request-password-reset`,
+        {
+          method: "POST",
+          body: JSON.stringify({ email }),
+        }
+      )
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" }
+    }
   }
 
   async resetPassword(userId: string, secret: string, password: string): Promise<ApiResponse<void>> {
-    // Mock implementation for now
-    return { success: true }
-  }
-
-  // Add the missing confirmVerification method
-  async confirmVerification(userId: string, secret: string): Promise<ApiResponse<void>> {
     try {
       return await this.request<void>(
-        `${this.baseUrl}/auth/verify-email`,
+        `${this.baseUrl}/auth/reset-password`,
         {
           method: "POST",
-          body: JSON.stringify({ userId, secret }),
+          body: JSON.stringify({ userId, secret, password }),
         }
+      )
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" }
+    }
+  }
+
+  async confirmVerification(token: string): Promise<ApiResponse<void>> {
+    try {
+      return await this.request<void>(
+        `${this.baseUrl}/auth/verify?token=${encodeURIComponent(token)}`,
+        { method: "GET" }
       )
     } catch (error) {
       return { 

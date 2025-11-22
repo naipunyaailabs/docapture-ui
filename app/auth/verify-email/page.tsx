@@ -10,8 +10,7 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react"
 
 function VerificationContent() {
   const searchParams = useSearchParams()
-  const userId = searchParams.get("userId")
-  const secret = searchParams.get("secret")
+  const token = searchParams.get("token")
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [error, setError] = useState<string | null>(null)
   const [isClient, setIsClient] = useState(false)
@@ -19,14 +18,14 @@ function VerificationContent() {
   useEffect(() => {
     // Set isClient to true only on the client side
     setIsClient(true)
-    if (!userId || !secret) {
+    if (!token) {
       setStatus("error")
       setError("Missing verification details. Please use the link from your email.")
       return
     }
 
     const verify = async () => {
-      const response = await apiService.confirmVerification(userId, secret)
+      const response = await apiService.confirmVerification(token)
       if (response.success) {
         setStatus("success")
       } else {
@@ -36,7 +35,7 @@ function VerificationContent() {
     }
 
     verify()
-  }, [userId, secret])
+  }, [token])
 
   // Don't render anything during server-side rendering
   if (!isClient) {
