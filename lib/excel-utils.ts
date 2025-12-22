@@ -9,23 +9,23 @@
 export function convertJsonToExcelFormat(data: any): any[] {
   // Handle null or undefined data
   if (!data) return [];
-  
+
   // If it's already an array, return as is
   if (Array.isArray(data)) {
     return data;
   }
-  
+
   // If it's a simple primitive, wrap it in an array
   if (typeof data !== 'object') {
     return [{ value: data }];
   }
-  
+
   // Handle objects by converting to array of key-value pairs
   if (typeof data === 'object' && data !== null) {
     // Check if it's a structured object that should be flattened
     return flattenObjectForExcel(data);
   }
-  
+
   return [];
 }
 
@@ -37,30 +37,30 @@ export function convertJsonToExcelFormat(data: any): any[] {
  */
 function flattenObjectForExcel(obj: any, prefix: string = ''): any[] {
   const result: any[] = [];
-  
+
   // Handle arrays of objects
   if (Array.isArray(obj)) {
     if (obj.length === 0) return [];
-    
+
     // If array contains objects, convert to table format
     if (typeof obj[0] === 'object' && obj[0] !== null) {
       return obj;
     }
-    
+
     // If array contains primitives, create a simple list
     return obj.map((item, index) => ({
       index: index + 1,
       value: item
     }));
   }
-  
+
   // Handle simple objects
   if (typeof obj === 'object' && obj !== null) {
     const flatObj: any = {};
-    
+
     for (const [key, value] of Object.entries(obj)) {
       const fullKey = prefix ? `${prefix}_${key}` : key;
-      
+
       if (value === null || value === undefined) {
         flatObj[fullKey] = '';
       } else if (typeof value === 'object' && !Array.isArray(value)) {
@@ -78,10 +78,10 @@ function flattenObjectForExcel(obj: any, prefix: string = ''): any[] {
         flatObj[fullKey] = value;
       }
     }
-    
+
     return [flatObj];
   }
-  
+
   return [{ [prefix || 'value']: obj }];
 }
 
@@ -93,17 +93,17 @@ function flattenObjectForExcel(obj: any, prefix: string = ''): any[] {
 export function downloadAsExcel(data: any, filename: string = 'data.xlsx'): void {
   // For now, we'll create a simple CSV since we don't have a full Excel library
   // In a real implementation, you would use a library like xlsx or exceljs
-  
+
   const excelData = convertJsonToExcelFormat(data);
-  
+
   // Convert to CSV format as a fallback
   let csvContent = '';
-  
+
   if (excelData.length > 0) {
     // Add headers
     const headers = Object.keys(excelData[0]);
     csvContent += headers.join(',') + '\n';
-    
+
     // Add rows
     excelData.forEach(row => {
       const values = headers.map(header => {
@@ -117,7 +117,7 @@ export function downloadAsExcel(data: any, filename: string = 'data.xlsx'): void
       csvContent += values.join(',') + '\n';
     });
   }
-  
+
   // Create download link
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -141,18 +141,18 @@ export function processFieldExtractionForExcel(extractedData: any): any[] {
   if (Array.isArray(extractedData)) {
     return extractedData;
   }
-  
+
   // Convert object to array format
   if (typeof extractedData === 'object' && extractedData !== null) {
     // If it has a specific structure we recognize
     if (extractedData.extracted) {
       return processFieldExtractionForExcel(extractedData.extracted);
     }
-    
+
     // Use smart conversion for better Excel formatting
     return smartConvertToExcelRows(extractedData);
   }
-  
+
   return [{ value: extractedData }];
 }
 
@@ -161,16 +161,16 @@ export function processFieldExtractionForExcel(extractedData: any): any[] {
  */
 function smartConvertToExcelRows(obj: Record<string, any>): any[] {
   const rows: any[] = [];
-  
+
   Object.entries(obj).forEach(([key, value]) => {
     const formattedKey = formatFieldName(key);
-    
+
     if (Array.isArray(value)) {
       if (value.length === 0) {
         rows.push({ Field: formattedKey, Value: '', Type: 'Empty Array' });
       } else if (typeof value[0] === 'object') {
-        rows.push({ 
-          Field: formattedKey, 
+        rows.push({
+          Field: formattedKey,
           Value: `${value.length} items (see details)`,
           Type: 'Array of Objects'
         });
@@ -187,16 +187,16 @@ function smartConvertToExcelRows(obj: Record<string, any>): any[] {
           }
         });
       } else {
-        rows.push({ 
-          Field: formattedKey, 
+        rows.push({
+          Field: formattedKey,
           Value: value.join(', '),
           Type: 'Array'
         });
       }
     } else if (typeof value === 'object' && value !== null) {
       // Nested object
-      rows.push({ 
-        Field: formattedKey, 
+      rows.push({
+        Field: formattedKey,
         Value: `Object with ${Object.keys(value).length} properties`,
         Type: 'Object'
       });
@@ -209,14 +209,14 @@ function smartConvertToExcelRows(obj: Record<string, any>): any[] {
         });
       });
     } else {
-      rows.push({ 
-        Field: formattedKey, 
+      rows.push({
+        Field: formattedKey,
         Value: formatFieldValue(value),
         Type: getValueType(value)
       });
     }
   });
-  
+
   return rows;
 }
 
@@ -261,14 +261,42 @@ export function formatFieldValue(value: any): string {
   if (value === null || value === undefined) {
     return '';
   }
-  
+
   if (Array.isArray(value)) {
     return value.join(', ');
   }
-  
+
   if (typeof value === 'object') {
     return JSON.stringify(value, null, 2);
   }
-  
+
   return String(value);
+}
+
+/**
+ * Downloads a Base64 encoded string as a file
+ * @param base64Content - The Base64 string content
+ * @param filename - The name of the file to save as
+ * @param mimeType - The MIME type of the file
+ */
+export function downloadBase64File(base64Content: string, filename: string, mimeType: string): void {
+  // Convert Base64 to Blob
+  const byteCharacters = atob(base64Content);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: mimeType });
+
+  // Create download link
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

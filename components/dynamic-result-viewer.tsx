@@ -4,11 +4,11 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  FileText, 
-  Download, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  FileText,
+  Download,
+  CheckCircle,
+  AlertCircle,
   FileSearch,
   FileBarChart,
   FileCode,
@@ -17,7 +17,7 @@ import {
   ChevronRight,
   FileSpreadsheet
 } from "lucide-react";
-import { convertJsonToExcelFormat, downloadAsExcel, processFieldExtractionForExcel } from "@/lib/excel-utils";
+import { convertJsonToExcelFormat, downloadAsExcel, processFieldExtractionForExcel, downloadBase64File } from "@/lib/excel-utils";
 import { createFieldExtractionExcel, downloadExcelWorkbook } from "@/lib/advanced-excel-utils";
 
 interface DynamicResultViewerProps {
@@ -25,6 +25,13 @@ interface DynamicResultViewerProps {
   result: any;
   isLoading: boolean;
   error: string | null;
+}
+
+export interface QuotationComparisonResult {
+  comparison: string;
+  excelFile?: string;
+  vendorCount: number;
+  vendors: string[];
 }
 
 export function DynamicResultViewer({
@@ -36,14 +43,14 @@ export function DynamicResultViewer({
   // Render markdown content (for quotation comparison)
   const renderMarkdownResult = (data: any) => {
     if (!data) return null;
-    
+
     // Extract markdown content
     const markdownContent = data.comparison || data.markdown || data;
-    
+
     if (typeof markdownContent !== 'string') {
       return renderJsonResult(data);
     }
-    
+
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -52,9 +59,25 @@ export function DynamicResultViewer({
             Quotation Comparison Analysis
           </h3>
           <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
+            {data.excelFile && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  downloadBase64File(
+                    data.excelFile,
+                    `quotation-comparison-${new Date().toISOString().slice(0, 10)}.xlsx`,
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                  );
+                }}
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Download Excel Report
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => {
                 const blob = new Blob([markdownContent], { type: 'text/markdown' });
                 const url = URL.createObjectURL(blob);
@@ -70,7 +93,7 @@ export function DynamicResultViewer({
             </Button>
           </div>
         </div>
-        
+
         {/* Vendor count and names */}
         {data.vendorCount && (
           <div className="bg-muted p-3 rounded-lg">
@@ -84,7 +107,7 @@ export function DynamicResultViewer({
             </p>
           </div>
         )}
-        
+
         {/* Render markdown as formatted content */}
         <div className="prose prose-sm max-w-none border rounded-lg p-6 bg-background">
           <div className="markdown-content" style={{ whiteSpace: 'pre-wrap' }}>
@@ -94,11 +117,11 @@ export function DynamicResultViewer({
       </div>
     );
   };
-  
+
   // Simple markdown to HTML converter (handles basic markdown syntax)
   const formatMarkdownToHtml = (markdown: string) => {
     if (!markdown) return null;
-    
+
     // Split into lines
     const lines = markdown.split('\n');
     const elements: React.ReactElement[] = [];
@@ -106,7 +129,7 @@ export function DynamicResultViewer({
     let inTable = false;
     let tableHeaders: string[] = [];
     let tableRows: string[][] = [];
-    
+
     const flushList = () => {
       if (currentList.length > 0) {
         elements.push(
@@ -119,7 +142,7 @@ export function DynamicResultViewer({
         currentList = [];
       }
     };
-    
+
     const flushTable = () => {
       if (inTable && tableHeaders.length > 0) {
         elements.push(
@@ -151,7 +174,7 @@ export function DynamicResultViewer({
         tableRows = [];
       }
     };
-    
+
     lines.forEach((line, index) => {
       // Headers
       if (line.startsWith('## ')) {
@@ -219,13 +242,13 @@ export function DynamicResultViewer({
         }
       }
     });
-    
+
     flushList();
     flushTable();
-    
+
     return <>{elements}</>;
   };
-  
+
   // Format inline markdown (bold, italic, code)
   const formatInlineMarkdown = (text: string): string => {
     return text
@@ -237,7 +260,7 @@ export function DynamicResultViewer({
   // Render JSON data in a formatted way
   const renderJsonResult = (data: any) => {
     if (!data) return null;
-    
+
     // For field extraction results
     if (serviceId === "field-extractor") {
       return (
@@ -248,9 +271,9 @@ export function DynamicResultViewer({
                 <FileSearch className="h-5 w-5" />
                 Extracted Fields
               </h3>
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={async () => {
                   const workbook = await createFieldExtractionExcel(data, { serviceId, processedAt: new Date().toISOString() });
                   await downloadExcelWorkbook(workbook, "field-extraction-results.xlsx");
@@ -264,7 +287,7 @@ export function DynamicResultViewer({
               {renderExtractedFields(data.extracted || data)}
             </div>
           </div>
-          
+
           {/* Template information if available */}
           {(data.templateId || data.confidence !== undefined || data.usedTemplate !== undefined) && (
             <div>
@@ -299,7 +322,7 @@ export function DynamicResultViewer({
         </div>
       );
     }
-    
+
     // For other services, render generic JSON with Excel export option
     return (
       <div className="space-y-4">
@@ -308,9 +331,9 @@ export function DynamicResultViewer({
             <FileBarChart className="h-5 w-5" />
             Processed Results
           </h3>
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => downloadAsExcel(data, `${serviceId}-results.xlsx`)}
           >
             <Download className="h-4 w-4 mr-2" />
@@ -329,7 +352,7 @@ export function DynamicResultViewer({
   // Render extracted fields in a more readable format
   const renderExtractedFields = (fields: any) => {
     if (!fields) return null;
-    
+
     // If it's already a string, try to parse it as JSON
     if (typeof fields === "string") {
       try {
@@ -339,12 +362,12 @@ export function DynamicResultViewer({
         return <div className="text-sm">{fields}</div>;
       }
     }
-    
+
     // If it's not an object, display as is
     if (typeof fields !== "object") {
       return <div className="text-sm">{JSON.stringify(fields)}</div>;
     }
-    
+
     // Render object fields
     return (
       <div className="space-y-4">
@@ -378,7 +401,7 @@ export function DynamicResultViewer({
       if (value.length === 0) {
         return <span className="text-muted-foreground italic">No items</span>;
       }
-      
+
       // Check if it's an array of objects
       if (typeof value[0] === "object" && value[0] !== null) {
         return (
@@ -391,7 +414,7 @@ export function DynamicResultViewer({
           </div>
         );
       }
-      
+
       // Simple array
       return (
         <ul className="list-disc pl-5 space-y-1">
@@ -401,7 +424,7 @@ export function DynamicResultViewer({
         </ul>
       );
     }
-    
+
     // Handle objects
     if (value !== null && typeof value === "object") {
       return (
@@ -410,12 +433,12 @@ export function DynamicResultViewer({
         </div>
       );
     }
-    
+
     // Handle null/undefined
     if (value === null || value === undefined) {
       return <span className="text-muted-foreground italic">Not specified</span>;
     }
-    
+
     // Handle strings and other primitives
     return <div className="text-sm">{String(value)}</div>;
   };
@@ -423,10 +446,10 @@ export function DynamicResultViewer({
   // Render HTML content
   const renderHtmlResult = (htmlContent: string) => {
     if (!htmlContent) return null;
-    
+
     return (
       <div className="border rounded-lg p-4">
-        <div 
+        <div
           className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
@@ -437,10 +460,10 @@ export function DynamicResultViewer({
   // Render table data with Excel export
   const renderTableResult = (tableData: any[]) => {
     if (!tableData || !Array.isArray(tableData) || tableData.length === 0) return null;
-    
+
     // Assume first object's keys are column headers
     const headers = Object.keys(tableData[0]);
-    
+
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -448,9 +471,9 @@ export function DynamicResultViewer({
             <Table className="h-5 w-5" />
             Tabular Data
           </h3>
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => downloadAsExcel(tableData, "table-data.xlsx")}
           >
             <Download className="h-4 w-4 mr-2" />
@@ -462,8 +485,8 @@ export function DynamicResultViewer({
             <thead className="bg-gray-50">
               <tr>
                 {headers.map((header) => (
-                  <th 
-                    key={header} 
+                  <th
+                    key={header}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     {header}
@@ -491,10 +514,10 @@ export function DynamicResultViewer({
   // Render document summarizer result with PDF/Word download options
   const renderDocumentSummaryResult = (data: any) => {
     if (!data) return null;
-    
+
     // Check if we have a downloadable file
     const hasDownload = data.fileName && data.downloadUrl;
-    
+
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -504,9 +527,9 @@ export function DynamicResultViewer({
           </h3>
           {hasDownload && (
             <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   const link = document.createElement('a');
                   link.href = data.downloadUrl;
@@ -517,9 +540,9 @@ export function DynamicResultViewer({
                 <FileText className="h-4 w-4 mr-2" />
                 Download PDF
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   const link = document.createElement('a');
                   link.href = data.downloadUrl;
@@ -533,9 +556,9 @@ export function DynamicResultViewer({
             </div>
           )}
         </div>
-        
+
         {data.summary ? (
-          <div 
+          <div
             className="prose max-w-none border rounded-lg p-4"
             dangerouslySetInnerHTML={{ __html: data.summary }}
           />
@@ -565,13 +588,13 @@ export function DynamicResultViewer({
   // Render RFP creation result with proper download option
   const renderRfpResult = (data: any) => {
     if (!data) return null;
-    
+
     // Extract the result data
     const resultData = data.result || data;
-    
+
     // State for download functionality
     const [isDownloading, setIsDownloading] = React.useState(false);
-    
+
     const handleDownload = async () => {
       setIsDownloading(true);
       try {
@@ -584,7 +607,7 @@ export function DynamicResultViewer({
         setIsDownloading(false);
       }
     };
-    
+
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -601,9 +624,9 @@ export function DynamicResultViewer({
               )}
             </div>
           </div>
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={handleDownload}
             disabled={isDownloading}
           >
@@ -620,19 +643,19 @@ export function DynamicResultViewer({
             )}
           </Button>
         </div>
-        
+
         {resultData.message && (
           <div className="text-sm text-muted-foreground p-4 bg-muted rounded-lg">
             {resultData.message}
           </div>
         )}
-        
+
         {resultData.processingTime && (
           <div className="text-sm text-muted-foreground p-4 bg-muted rounded-lg">
             Processing completed in {resultData.processingTime}ms
           </div>
         )}
-        
+
         <div className="text-sm text-muted-foreground p-4 bg-muted rounded-lg">
           <p><strong>Note:</strong> The RFP document has been generated successfully. In a production environment, you would be able to download the file directly. For now, please contact support to retrieve your generated document.</p>
         </div>
@@ -643,7 +666,7 @@ export function DynamicResultViewer({
   // Render RFP summarizer result
   const renderRfpSummaryResult = (data: any) => {
     if (!data) return null;
-    
+
     // Check if we have HTML content (primary format from RFP summarizer)
     if (data.result?.html) {
       return (
@@ -652,14 +675,14 @@ export function DynamicResultViewer({
             <FileBarChart className="h-5 w-5" />
             RFP Summary
           </h3>
-          <div 
+          <div
             className="prose max-w-none border rounded-lg p-4"
             dangerouslySetInnerHTML={{ __html: data.result.html }}
           />
         </div>
       );
     }
-    
+
     // Fallback to structured data if HTML is not available
     if (data.executiveSummary || data.summary) {
       return (
@@ -670,7 +693,7 @@ export function DynamicResultViewer({
               <p>{data.executiveSummary || data.summary}</p>
             </div>
           </div>
-          
+
           {data.keyRequirements && (
             <div>
               <h3 className="text-lg font-medium mb-3">Key Requirements</h3>
@@ -683,7 +706,7 @@ export function DynamicResultViewer({
               </div>
             </div>
           )}
-          
+
           {data.timeline && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -697,7 +720,7 @@ export function DynamicResultViewer({
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-medium mb-3">Budget</h3>
                 <div className="bg-muted p-4 rounded-md">
@@ -709,7 +732,7 @@ export function DynamicResultViewer({
         </div>
       );
     }
-    
+
     // Final fallback - render as JSON
     return renderJsonResult(data);
   };
@@ -724,7 +747,7 @@ export function DynamicResultViewer({
         </div>
       );
     }
-    
+
     if (error) {
       return (
         <div className="flex items-center gap-3 p-4 bg-destructive/10 text-destructive rounded-lg">
@@ -733,7 +756,7 @@ export function DynamicResultViewer({
         </div>
       );
     }
-    
+
     if (!result) {
       return (
         <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
@@ -742,45 +765,45 @@ export function DynamicResultViewer({
         </div>
       );
     }
-    
+
     // For RFP creator service
     if (serviceId === "rfp-creator") {
       return renderRfpResult(result.result || result);
     }
-    
+
     // For quotation comparison service (markdown output)
     if (serviceId === "quotation-compare") {
       return renderMarkdownResult(result.result || result);
     }
-    
+
     // For RFP summarizer service
     if (serviceId === "rfp-summarizer") {
       return renderRfpSummaryResult(result.result || result);
     }
-    
+
     // For document summarizer, render with PDF/Word download options
     if (serviceId === "document-summarizer") {
       return renderDocumentSummaryResult(result.result || result);
     }
-    
+
     // For field extractor, render JSON with enhanced formatting
     if (serviceId === "field-extractor") {
       return renderJsonResult(result.result || result);
     }
-    
+
     // For other services, try to determine format
     const data = result.result || result;
-    
+
     // If it's a string and looks like HTML
     if (typeof data === "string" && data.startsWith("<")) {
       return renderHtmlResult(data);
     }
-    
+
     // If it's an array, assume it's table data
     if (Array.isArray(data)) {
       return renderTableResult(data);
     }
-    
+
     // Default to JSON rendering
     return renderJsonResult(data);
   };
