@@ -17,6 +17,14 @@ export interface AGUIResponse<T = any> {
   events?: AGUIEvent[];
 }
 
+export interface RfpAgentResult {
+  raw: string;
+  parsed: any | null;
+  schemaValid: boolean;
+  error?: string;
+  htmlSummary?: string;
+}
+
 export class AGUIClient {
   private baseUrl: string;
   private apiKey: string;
@@ -116,9 +124,6 @@ export class AGUIClient {
       if (this.authToken) {
         // Use user auth token if available
         headers['Authorization'] = `Bearer ${this.authToken}`;
-      } else {
-        // Fall back to API key
-        headers['Authorization'] = `Bearer ${this.apiKey}`;
       }
 
       if (agentType === 'field-extractor' || agentType === 'document-summarizer' || agentType === 'rfp-summarizer' || agentType === 'template-uploader' || agentType === 'quotation-compare') {
@@ -474,8 +479,8 @@ export class AGUIClient {
   async summarizeRfp(
     document: File,
     onEvent?: (event: AGUIEvent) => void
-  ): Promise<AGUIResponse> {
-    return this.executeAgent('rfp-summarizer', {
+  ): Promise<AGUIResponse<RfpAgentResult>> {
+    return this.executeAgent<RfpAgentResult>('rfp-summarizer', {
       document
     }, onEvent);
   }

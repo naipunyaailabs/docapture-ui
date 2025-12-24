@@ -153,14 +153,11 @@ class ApiService {
     aguiClient.setAuthToken(null)
   }
 
-  private getHeaders(isFormData = false, useApiKey = false): HeadersInit {
+  private getHeaders(isFormData = false): HeadersInit {
     const headers: HeadersInit = {}
     if (!isFormData) headers["Content-Type"] = "application/json"
 
-    if (useApiKey) {
-      // Use API key for backend service endpoints
-      headers["Authorization"] = `Bearer ${config.apiKey}`
-    } else if (this.authToken) {
+    if (this.authToken) {
       // Use user auth token for user-specific endpoints
       headers["Authorization"] = `Bearer ${this.authToken}`
     }
@@ -173,13 +170,12 @@ class ApiService {
     url: string,
     options: RequestInit = {},
     isFormData = false,
-    useApiKey = false, // Add parameter to specify if we should use API key
   ): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
         ...options,
         headers: {
-          ...this.getHeaders(isFormData, useApiKey),
+          ...this.getHeaders(isFormData),
           ...options.headers,
         },
       })
@@ -306,8 +302,12 @@ class ApiService {
 
   async logout(): Promise<ApiResponse<void>> {
     try {
-      // In a real implementation, you might want to call a logout endpoint
-      // For now, we'll just clear the local session
+      // Call logout endpoint to invalidate session on server
+      await this.request<void>(
+        `${this.baseUrl}/auth/logout`,
+        { method: "POST" }
+      )
+      
       this.clearToken()
       return { success: true }
     } catch (error) {
@@ -319,14 +319,10 @@ class ApiService {
   // --- Service Endpoints ---
   async getServices(): Promise<ApiResponse<ServiceInfo[]>> {
     try {
-      // Use user authentication if available, otherwise fall back to API key
-      const useApiKey = !this.authToken;
-      
       return await this.request<ServiceInfo[]>(
         `${this.baseUrl}/services`,
         { method: "GET" },
         false, // isFormData
-        useApiKey
       )
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" }
@@ -335,14 +331,10 @@ class ApiService {
 
   async getServiceById(id: string): Promise<ApiResponse<ServiceInfo>> {
     try {
-      // Use user authentication if available, otherwise fall back to API key
-      const useApiKey = !this.authToken;
-      
       return await this.request<ServiceInfo>(
         `${this.baseUrl}/services/${id}`,
         { method: "GET" },
         false, // isFormData
-        useApiKey
       )
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" }
@@ -431,12 +423,8 @@ class ApiService {
         }
       }
       
-      // Use authenticated processing endpoint if user is logged in
-      const endpoint = this.authToken 
-        ? `${this.baseUrl}/process-auth/${serviceId}`
-        : `${this.baseUrl}/process/${serviceId}`;
-      
-      const useApiKey = !this.authToken; // Use API key only if not logged in
+      // Use authenticated processing endpoint
+      const endpoint = `${this.baseUrl}/process/${serviceId}`;
       
       return await this.request<ProcessingResult>(
         endpoint,
@@ -445,7 +433,6 @@ class ApiService {
           body: formData,
         },
         true, // isFormData
-        useApiKey
       );
     } catch (error) {
       return { 
