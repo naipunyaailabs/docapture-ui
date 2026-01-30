@@ -44,8 +44,8 @@ export function DashboardHeader({ className }: { className?: string }) {
     >
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-            <PanelLeft className="h-5 w-5" />
+          <Button variant="outline" size="icon" className="shrink-0 lg:hidden h-10 w-10">
+            <PanelLeft className="h-6 w-6" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>

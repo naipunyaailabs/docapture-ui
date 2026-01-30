@@ -115,8 +115,8 @@ export function UsageStatus({ onStatusChange }: UsageStatusProps) {
   } as const
   const PlanIcon = planIcons[planId as keyof typeof planIcons] || Crown
 
-  const cardBorderColor = !canProcess && !isUnlimited 
-    ? "border-orange-500/50 bg-orange-50/50 dark:bg-orange-950/20" 
+  const cardBorderColor = !canProcess && !isUnlimited
+    ? "border-orange-500/50 bg-orange-50/50 dark:bg-orange-950/20"
     : ""
 
   return (
@@ -129,11 +129,7 @@ export function UsageStatus({ onStatusChange }: UsageStatusProps) {
           {planName} Plan Status
         </CardTitle>
         <CardDescription>
-          {isUnlimited
-            ? "Unlimited document processing"
-            : canProcess
-              ? `${documentsLimit - documentsUsed} documents remaining`
-              : "Document limit reached"}
+          Subscription Usage
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -145,18 +141,17 @@ export function UsageStatus({ onStatusChange }: UsageStatusProps) {
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Document Usage</span>
               </div>
-              <div className={`px-2 py-1 text-xs rounded-full ${
-                !canProcess && !isUnlimited && progressPercentage >= 100
+              <div className={`px-2 py-1 text-xs rounded-full ${!canProcess && !isUnlimited && progressPercentage >= 100
                   ? "bg-destructive text-destructive-foreground"
                   : "bg-secondary text-secondary-foreground"
-              }`}>
+                }`}>
                 {documentsUsed} / {isUnlimited ? "Unlimited" : documentsLimit}
               </div>
             </div>
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div 
+                <div
                   className="h-2 w-full rounded-full bg-muted"
                   aria-hidden="true"
                 />
@@ -182,28 +177,26 @@ export function UsageStatus({ onStatusChange }: UsageStatusProps) {
           <section aria-labelledby="status-message">
             <Alert
               role="status"
-              className={`${
-                canProcess
+              className={`${canProcess
                   ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
                   : "bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800"
-              }`}
+                }`}
             >
               {canProcess ? (
-                <CheckCircle 
-                  className="h-4 w-4 text-green-600 dark:text-green-400" 
+                <CheckCircle
+                  className="h-4 w-4 text-green-600 dark:text-green-400"
                   aria-hidden="true"
                 />
               ) : (
-                <AlertTriangle 
-                  className="h-4 w-4 text-orange-600 dark:text-orange-400" 
+                <AlertTriangle
+                  className="h-4 w-4 text-orange-600 dark:text-orange-400"
                   aria-hidden="true"
                 />
               )}
               <AlertDescription
                 id="status-message"
-                className={`${
-                  canProcess ? "text-green-700 dark:text-green-300" : "text-orange-700 dark:text-orange-300"
-                }`}
+                className={`${canProcess ? "text-green-700 dark:text-green-300" : "text-orange-700 dark:text-orange-300"
+                  }`}
               >
                 {message}
               </AlertDescription>
@@ -215,21 +208,21 @@ export function UsageStatus({ onStatusChange }: UsageStatusProps) {
         {((planId === "trial" && !canProcess) ||
           (planId !== "enterprise" && !canProcess) ||
           (planId !== "enterprise" && !isUnlimited && progressPercentage >= 80)) && (
-          <section aria-labelledby="action-section">
-            <div className="pt-2">
-              <Button 
-                asChild 
-                className="w-full bg-brand-primary hover:bg-brand-primary/90 text-black"
-                aria-label={planId === "trial" || !canProcess ? "Upgrade Plan" : "Contact Sales"}
-              >
-                <Link href={planId === "trial" || !canProcess ? "/pricing" : "/contact"}>
-                  {planId === "trial" || !canProcess ? "Upgrade Plan" : "Contact Sales"}
-                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-                </Link>
-              </Button>
-            </div>
-          </section>
-        )}
+            <section aria-labelledby="action-section">
+              <div className="pt-2">
+                <Button
+                  asChild
+                  className="w-full bg-brand-primary hover:bg-brand-primary/90 text-black"
+                  aria-label={planId === "trial" || !canProcess ? "Upgrade Plan" : "Contact Sales"}
+                >
+                  <Link href={planId === "trial" || !canProcess ? "/pricing" : "/contact"}>
+                    {planId === "trial" || !canProcess ? "Upgrade Plan" : "Contact Sales"}
+                    <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
+            </section>
+          )}
       </CardContent>
     </Card>
   )

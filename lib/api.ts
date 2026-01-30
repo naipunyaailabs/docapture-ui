@@ -484,8 +484,21 @@ class ApiService {
   }
 
   async sendVerificationEmail(): Promise<ApiResponse<void>> {
-    // Mock implementation for now
-    return { success: true }
+    if (!this.currentUser?.email) {
+      return { success: false, error: "User email not found" }
+    }
+
+    try {
+      return await this.request<void>(
+        `${this.baseUrl}/auth/resend-verification`,
+        {
+          method: "POST",
+          body: JSON.stringify({ email: this.currentUser.email }),
+        }
+      )
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" }
+    }
   }
 
   async getAnalytics(days: number = 30): Promise<ApiResponse<any>> {

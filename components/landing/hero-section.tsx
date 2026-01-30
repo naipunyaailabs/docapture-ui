@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { ArrowRight, PlayCircle, BadgePercent, KeyRound, ShieldCheck, Server, CheckCircle } from "lucide-react"
 import { config } from "@/lib/config"
 
@@ -67,6 +68,13 @@ export function HeroSection() {
             </span>
           </div>
 
+          <div className="mb-6 flex justify-center">
+            <Badge variant="outline" className="px-4 py-1.5 text-sm border-brand-primary/50 text-brand-secondary bg-brand-primary/10 rounded-full animate-bounce sm:animate-none">
+              <span className="mr-2">🚀</span>
+              Free Community Edition Access Available
+            </Badge>
+          </div>
+
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
             <span className="block">Reimagine</span>
             <motion.span
@@ -80,8 +88,8 @@ export function HeroSection() {
           </h1>
 
           <p className="max-w-3xl mx-auto text-sm sm:text-md text-muted-foreground mb-8">
-          Say goodbye to costly per-page pricing! Our AI-driven document extraction solution offers a one-time setup
-          with no usage limits — giving you the freedom to scale without breaking the bank.
+            Say goodbye to costly per-page pricing! Our AI-driven document extraction solution offers a one-time setup
+            with no usage limits — giving you the freedom to scale without breaking the bank.
           </p>
 
           {/* <p className="max-w-3xl mx-auto text-xl sm:text-2xl font-semibold text-foreground mb-10">

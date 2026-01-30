@@ -1,8 +1,8 @@
 export const config = {
   appName: process.env.NEXT_PUBLIC_APP_NAME || "docapture Pro",
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL || "https://docapture.com",
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.docapture.com",
-  authApiBaseUrl: process.env.NEXT_PUBLIC_AUTH_API_BASE_URL || "https://api.docapture.com",
+  apiBaseUrl: process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.docapture.com",
+  authApiBaseUrl: process.env.AUTH_API_BASE_URL || process.env.NEXT_PUBLIC_AUTH_API_BASE_URL || "https://api.docapture.com",
   apiKey: "", // Client-side should not use API Key. Use user session instead.
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@docapture.com",
   maxUploadSize: parseInt(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE || '10'), // MB

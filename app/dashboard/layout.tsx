@@ -42,12 +42,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      
+
       <main className="px-6 fixed inset-0 overflow-y-auto">
         <DashboardHeader />
         <div className={cn(
           "flex-1 transition-all duration-300 ease-in-out",
-          isCollapsed ? "md:ml-20" : "md:ml-64"
+          isCollapsed ? "lg:ml-20" : "lg:ml-64"
         )}>
           {children}
         </div>

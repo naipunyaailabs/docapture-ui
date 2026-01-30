@@ -56,20 +56,20 @@ export function Sidebar({ className, isCollapsed, setIsCollapsed }: SidebarProps
         className={cn(
           "border-r transition-all duration-300  ease-in-out",
           // Mobile/Medium styles
-          "fixed xl:relative",
-          isMobileCollapsed ? "-translate-x-full xl:translate-x-0" : "translate-x-0",
+          "fixed lg:relative",
+          isMobileCollapsed ? "-translate-x-full lg:translate-x-0" : "translate-x-0",
           // Desktop styles
-          isCollapsed ? "xl:w-20" : "xl:w-64",
+          isCollapsed ? "lg:w-20" : "lg:w-64",
           // Base styles
           "w-64 h-screen bg-background dark:bg-black z-40",
           className,
         )}
-        
+
       >
         <div className="flex h-full flex-col gap-2">
           <div
             className={cn(
-              "flex h-14 items-center border-b px-4 xl:h-[60px] xl:px-6 relative",
+              "flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6 relative",
               isCollapsed && "justify-center",
             )}
             style={{ borderColor: config.colors.primary }}
@@ -88,7 +88,7 @@ export function Sidebar({ className, isCollapsed, setIsCollapsed }: SidebarProps
               variant="ghost"
               size="icon"
               className="hidden lg:flex absolute -right-12 top-1/2 -translate-y-1/2 rounded-full border bg-background hover:bg-transparent transition-colors"
-              style={{ 
+              style={{
                 borderColor: config.colors.primary,
                 color: config.colors.primary
               }}

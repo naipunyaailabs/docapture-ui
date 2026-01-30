@@ -59,24 +59,24 @@ export function ServiceCard({ service, usageCount, status, disabled = false }: S
       router.push(`/auth/login?redirect=/dashboard/services/${service.id}`)
       return
     }
-    
+
     // If service is explicitly disabled, don't navigate
     if (disabled) {
       return
     }
-    
+
     // Navigate to the service page
     router.push(`/dashboard/services/${service.id}`)
   }
 
   return (
     <Card
-      className={`flex flex-col h-full bg-card hover:shadow-lg hover:border-brand-primary/50 transition-all duration-200 ease-in-out ${disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}`}
+      className={`flex flex-col h-full bg-card hover:shadow-xl hover:scale-[1.02] hover:ring-2 hover:ring-brand-primary/20 hover:border-brand-primary transition-all duration-300 ease-out group ${disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}`}
       onClick={handleServiceClick}
     >
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start mb-3">
-          <div className="p-2 bg-muted rounded-md text-brand-accent dark:text-brand-accent">
+          <div className="p-2 bg-muted rounded-md text-brand-accent dark:text-brand-accent group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors duration-300">
             {getIconComponent(service.icon)}
           </div>
           <Badge className={`${getStatusColor(status)} px-2.5 py-0.5 text-xs font-medium`}>{status}</Badge>

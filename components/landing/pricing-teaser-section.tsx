@@ -10,10 +10,13 @@ export function PricingTeaserSection() {
           <h2 className="text-3xl sm:text-4xl font-bold text-brand-secondary mb-4">
             Custom Solutions for Every Business
           </h2>
-              <p className="text-lg text-brand-secondary/90 max-w-2xl mx-auto mb-8">
+          <p className="text-lg text-brand-secondary/90 max-w-2xl mx-auto mb-8">
             We understand that every business has unique document processing needs. That's why we offer tailored
             solutions with custom pricing that scales with your requirements.
           </p>
+          <div className="mb-8 inline-block bg-brand-secondary/10 backdrop-blur-sm px-6 py-2 rounded-full border border-brand-secondary/20">
+            <span className="text-brand-secondary font-medium">✨ New: Free Community Edition now available for everyone!</span>
+          </div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-brand-secondary/90 mb-10">
             <span className="flex items-center">
               <CheckCircle className="h-5 w-5 mr-2 text-brand-secondary" /> Tailored Solutions
