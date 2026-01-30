@@ -11,7 +11,7 @@ const nextConfig = {
   },
   // Configure for static export
   output: 'export',
-  trailingSlash: false,
+  trailingSlash: true,
   // Removed exportPathMap as it's not compatible with App Router
   // We'll handle static generation differently
 }
