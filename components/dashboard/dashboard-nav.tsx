@@ -19,7 +19,6 @@ export function DashboardNav({ isCollapsed }: DashboardNavProps) {
     { href: "/dashboard/history", label: "History", icon: History },
     { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3, isNew: true },
     { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, isNew: true },
-    { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
     { href: "/dashboard/profile", label: "Settings", icon: Settings },
   ]
 

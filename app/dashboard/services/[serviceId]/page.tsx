@@ -8,11 +8,14 @@ export default async function ServicePage({ params }: { params: Promise<{ servic
 // For static export, we need to define which service IDs to pre-render
 // In a real application, you would fetch these from your API
 export async function generateStaticParams() {
-  // Return service IDs to pre-render
+  // Return documented service IDs to pre-render
   return [
-    { serviceId: 'template-uploader' },
-    { serviceId: 'quotation-compare' }
+    { serviceId: 'document-summarizer' },
+    { serviceId: 'quotation-compare' },
+    { serviceId: 'rfp-creator' },
+    { serviceId: 'field-extractor' },
+    { serviceId: 'rfp-summarizer' }
   ]
 }
 
-export const dynamicParams = false
+export const dynamicParams = true // Allow dynamic params for future services

@@ -16,6 +16,14 @@ export default function ServicesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [usage, setUsage] = useState<{ [serviceId: string]: number }>({}) // Mock usage
 
+  const DOCUMENTED_SERVICES = [
+    'document-summarizer',
+    'quotation-compare',
+    'rfp-creator',
+    'field-extractor',
+    'rfp-summarizer'
+  ]
+
   useEffect(() => {
     const fetchServices = async () => {
       setIsLoading(true)
@@ -23,7 +31,14 @@ export default function ServicesPage() {
       try {
         const response = await apiService.getServices()
         if (response.success && response.data) {
-          setServices(response.data)
+          // Filter only documented services
+          const filtered = response.data.filter(s => DOCUMENTED_SERVICES.includes(s.id))
+
+          // If quotation-compare is missing (since it's not in the app directory yet), 
+          // we might want to manually add it if the backend doesn't return it
+          // But for now, let's stick to what we have or add it to the list if missing
+
+          setServices(filtered)
         } else {
           setError(response.error || "Failed to load services.")
         }
@@ -41,15 +56,14 @@ export default function ServicesPage() {
     return services.filter(
       (service) =>
         service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (service.category && service.category.toLowerCase().includes(searchTerm.toLowerCase())),
+        service.description.toLowerCase().includes(searchTerm.toLowerCase())
     )
   }, [services, searchTerm])
 
   const groupedServices = useMemo(() => {
     return filteredServices.reduce(
-      (acc, service) => {
-        const category = service.category || "General"
+      (acc: Record<string, ServiceInfo[]>, service: ServiceInfo) => {
+        const category = service.category || "AI Solutions"
         if (!acc[category]) {
           acc[category] = []
         }

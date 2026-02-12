@@ -6,12 +6,12 @@ import { AnalyticsOverview } from "@/components/dashboard/analytics-overview"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { 
-  BarChart3, 
-  TrendingUp, 
-  FileText, 
-  Clock, 
-  CheckCircle2, 
+import {
+  BarChart3,
+  TrendingUp,
+  FileText,
+  Clock,
+  CheckCircle2,
   XCircle,
   Activity,
   Download,
@@ -27,7 +27,7 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   // Analytics data
   const [analyticsData, setAnalyticsData] = useState<any>(null)
   const [processingHistory, setProcessingHistory] = useState<any[]>([])
@@ -47,24 +47,24 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return
-      
+
       setLoading(true)
       setError(null)
-      
+
       try {
         // Fetch analytics data
         const days = getDaysFromTimeRange(timeRange)
         const analyticsResponse = await apiService.getAnalytics(days)
-        
+
         if (analyticsResponse.success && analyticsResponse.data) {
           setAnalyticsData(analyticsResponse.data)
         } else {
           setError(analyticsResponse.error || "Failed to load analytics data")
         }
-        
+
         // Fetch processing history for activity log
         const historyResponse = await apiService.getProcessingResults(10, 0)
-        
+
         if (historyResponse.success && historyResponse.data) {
           setProcessingHistory(historyResponse.data)
         }
@@ -74,25 +74,20 @@ export default function AnalyticsPage() {
         setLoading(false)
       }
     }
-    
+
     fetchData()
   }, [user, timeRange])
 
   // Stats derived from analytics data
-  const stats = analyticsData ? {
-    totalProcessed: analyticsData.totalProcessed,
-    successRate: analyticsData.successRate,
-    avgProcessingTime: analyticsData.avgProcessingTime,
-    documentsThisMonth: analyticsData.documentsThisMonth
-  } : {
-    totalProcessed: 0,
-    successRate: 0,
-    avgProcessingTime: 0,
-    documentsThisMonth: 0
+  const stats = {
+    totalProcessed: analyticsData?.totalProcessed ?? 0,
+    successRate: analyticsData?.successRate ?? 0,
+    avgProcessingTime: analyticsData?.avgProcessingTime ?? 0,
+    documentsThisMonth: analyticsData?.documentsThisMonth ?? 0
   }
 
   // Service stats derived from analytics data
-  const serviceStats = analyticsData?.serviceBreakdown?.map((service: any) => ({
+  const serviceStats = analyticsData?.serviceBreakdown?.map((service: { serviceName: string; count: number; successRate: number }) => ({
     name: service.serviceName,
     processed: service.count,
     success: Math.round(service.count * (service.successRate / 100)),
@@ -143,29 +138,29 @@ export default function AnalyticsPage() {
         <>
           {/* Time Range Selector */}
           <div className="flex gap-2">
-            <Button 
-              variant={timeRange === '7d' ? 'default' : 'outline'} 
+            <Button
+              variant={timeRange === '7d' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setTimeRange('7d')}
             >
               Last 7 days
             </Button>
-            <Button 
-              variant={timeRange === '30d' ? 'default' : 'outline'} 
+            <Button
+              variant={timeRange === '30d' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setTimeRange('30d')}
             >
               Last 30 days
             </Button>
-            <Button 
-              variant={timeRange === '90d' ? 'default' : 'outline'} 
+            <Button
+              variant={timeRange === '90d' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setTimeRange('90d')}
             >
               Last 90 days
             </Button>
-            <Button 
-              variant={timeRange === 'all' ? 'default' : 'outline'} 
+            <Button
+              variant={timeRange === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setTimeRange('all')}
             >
@@ -233,7 +228,7 @@ export default function AnalyticsPage() {
 
             <TabsContent value="overview" className="space-y-4">
               <AnalyticsOverview />
-              
+
               {/* Monthly Trend */}
               <Card>
                 <CardHeader>
@@ -264,7 +259,7 @@ export default function AnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {serviceStats.map((service, i) => (
+                    {serviceStats.map((service: any, i: number) => (
                       <div key={i} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="font-medium">{service.name}</div>
@@ -275,9 +270,9 @@ export default function AnalyticsPage() {
                             </Badge>
                           </div>
                         </div>
-                        <Progress 
-                          value={(service.success / service.processed) * 100} 
-                          className="h-2" 
+                        <Progress
+                          value={(service.success / service.processed) * 100}
+                          className="h-2"
                         />
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>Success Rate: {((service.success / service.processed) * 100).toFixed(1)}%</span>

@@ -8,39 +8,39 @@ export function FeaturesSection() {
   const features = [
     {
       icon: BrainCircuit,
-      title: "Intelligent OCR & AI",
-      description: "Context-aware AI goes beyond simple text recognition for superior data extraction.",
+      title: "Contextual Extraction",
+      description: "Deep AI-driven parsing of any document into structured JSON data with high accuracy.",
       gradient: "from-brand-primary to-brand-secondary",
     },
     {
       icon: Workflow,
-      title: "Automated Workflows",
-      description: "Set up seamless document processing pipelines tailored to your business needs.",
+      title: "Quotation Comparison",
+      description: "Simultaneously analyze multiple vendor quotes to find the best pricing and delivery terms.",
       gradient: "from-brand-primary to-brand-secondary",
     },
     {
       icon: FileStack,
-      title: "Multi-Format Support",
-      description: "Effortlessly process PDFs, images (JPG, PNG, TIFF), Word docs, and more.",
+      title: "RFP Intelligence",
+      description: "Generate professional RFP structures and summarize complex requirements instantly.",
       gradient: "from-brand-primary to-brand-secondary",
     },
     {
       icon: ShieldCheck,
-      title: "Enterprise-Grade Security",
-      description: "Your data is protected with robust security measures and compliance standards.",
+      title: "Summarization Engine",
+      description: "Get concise, focused summaries of long documents tailored to your specific focus areas.",
       gradient: "from-brand-primary to-brand-secondary",
     },
     {
       icon: BarChartBig,
-      title: "Actionable Insights",
-      description: "Transform raw document data into structured, meaningful analytics and reports.",
+      title: "Usage Analytics",
+      description: "Monitor processing history and document volume with an intuitive analytics dashboard.",
       gradient: "from-brand-primary to-brand-secondary",
     },
     {
       icon: Code2,
-      title: "Developer-Friendly API",
-      description: "Easily integrate docapture's power into your existing systems and applications.",
-        gradient: "from-brand-primary to-brand-secondary",
+      title: "Secure JWT API",
+      description: "Enterprise-ready API endpoints protected by JWT for seamless third-party integration.",
+      gradient: "from-brand-primary to-brand-secondary",
     },
   ]
 

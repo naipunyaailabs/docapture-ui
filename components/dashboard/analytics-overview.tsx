@@ -80,9 +80,12 @@ export function AnalyticsOverview() {
     )
   }
 
-  const { totalProcessed, avgProcessingTime, serviceBreakdown } = analyticsData
-  const mostUsedService = serviceBreakdown && serviceBreakdown.length > 0 
-    ? serviceBreakdown[0].serviceName 
+  const totalProcessed = analyticsData?.totalProcessed ?? 0
+  const avgProcessingTime = analyticsData?.avgProcessingTime ?? 0
+  const serviceBreakdown = analyticsData?.serviceBreakdown ?? []
+
+  const mostUsedService = serviceBreakdown.length > 0
+    ? serviceBreakdown[0].serviceName
     : "N/A"
 
   return (
@@ -110,7 +113,7 @@ export function AnalyticsOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {avgProcessingTime ? `${(avgProcessingTime / 1000).toFixed(1)}s` : 'N/A'}
+                {avgProcessingTime > 0 ? `${(avgProcessingTime / 1000).toFixed(1)}s` : 'N/A'}
               </div>
               <p className="text-xs text-muted-foreground">Per document</p>
             </CardContent>

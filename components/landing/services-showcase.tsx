@@ -28,7 +28,15 @@ export function ServicesShowcase() {
       try {
         const response = await apiService.getServices()
         if (response.success && response.data) {
-          setServices(response.data.slice(0, 6)) // Show only first 6 services
+          const DOCUMENTED_SERVICES = [
+            'document-summarizer',
+            'quotation-compare',
+            'rfp-creator',
+            'field-extractor',
+            'rfp-summarizer'
+          ]
+          const filtered = response.data.filter((s: any) => DOCUMENTED_SERVICES.includes(s.id))
+          setServices(filtered)
         }
       } catch (error) {
         console.error("Error fetching services:", error)
@@ -119,28 +127,25 @@ export function ServicesShowcase() {
               onMouseLeave={() => setHoveredService(null)}
             >
               <Card
-                className={`h-full overflow-hidden transition-all duration-300 ${
-                  hoveredService === service.id
+                className={`h-full overflow-hidden transition-all duration-300 ${hoveredService === service.id
                     ? "shadow-lg border-brand-primary transform -translate-y-1"
                     : "shadow border-border"
-                }`}
+                  }`}
               >
                 <CardContent className="p-0">
                   <div
-                    className={`h-3 w-full transition-all duration-300 ${
-                      hoveredService === service.id
+                    className={`h-3 w-full transition-all duration-300 ${hoveredService === service.id
                         ? "bg-brand-primary"
                         : "bg-primary"
-                    }`}
+                      }`}
                   ></div>
                   <div className="p-6">
                     <div className="mb-4 relative">
                       <div
-                        className={`p-3 rounded-lg inline-flex transition-all duration-300 ${
-                          hoveredService === service.id
+                        className={`p-3 rounded-lg inline-flex transition-all duration-300 ${hoveredService === service.id
                             ? "bg-gradient-to-br from-brand-primary/20 to-brand-secondary/20"
                             : "bg-muted"
-                        }`}
+                          }`}
                       >
                         <div className="text-brand-primary ">{getIconComponent(service.icon)}</div>
                       </div>
@@ -150,10 +155,10 @@ export function ServicesShowcase() {
                           background:
                             hoveredService === service.id
                               ? [
-                                  "radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.1) 0%, rgba(59, 130, 246, 0) 70%)",
-                                  "radial-gradient(circle at 60% 40%, rgba(34, 211, 238, 0.15) 0%, rgba(59, 130, 246, 0) 70%)",
-                                  "radial-gradient(circle at 40% 60%, rgba(34, 211, 238, 0.1) 0%, rgba(59, 130, 246, 0) 70%)",
-                                ]
+                                "radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.1) 0%, rgba(59, 130, 246, 0) 70%)",
+                                "radial-gradient(circle at 60% 40%, rgba(34, 211, 238, 0.15) 0%, rgba(59, 130, 246, 0) 70%)",
+                                "radial-gradient(circle at 40% 60%, rgba(34, 211, 238, 0.1) 0%, rgba(59, 130, 246, 0) 70%)",
+                              ]
                               : "none",
                         }}
                         transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
